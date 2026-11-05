@@ -1,18 +1,20 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BOOST MAD PRO</title>
+
 <style>
 * {box-sizing:border-box}
+
 body {
   margin:0;
   font-family:Arial,sans-serif;
   background:#08152e;
   color:white;
 }
+
 header {
   padding:22px;
   background:#102344;
@@ -21,15 +23,19 @@ header {
   align-items:center;
   border-bottom:1px solid #294365;
 }
+
 .logo {font-size:22px;font-weight:bold}
 .logo span {color:#ff8500}
+
 .hero {
   padding:55px 22px;
   text-align:center;
 }
+
 .hero h1 {font-size:34px}
 .hero h1 span {color:#ff8500}
 .hero p {color:#aab9d1;line-height:1.7}
+
 .btn {
   display:inline-block;
   background:#ff8500;
@@ -40,21 +46,60 @@ header {
   font-weight:bold;
   margin-top:15px;
 }
+
 h2 {text-align:center}
+
 .services {
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:18px;
   padding:20px;
 }
+
 .card {
   background:#122747;
   border:1px solid #294365;
   padding:24px;
   border-radius:18px;
 }
+
 .card h3 {color:#ff9a24}
 .card p {color:#aab9d1;line-height:1.6}
+
+.client-area {
+  max-width:450px;
+  margin:35px auto;
+  padding:25px;
+  background:#122747;
+  border:1px solid #294365;
+  border-radius:18px;
+}
+
+.client-area h2 {color:#ff8500}
+
+.client-area input {
+  width:100%;
+  padding:13px;
+  margin:8px 0;
+  border:0;
+  border-radius:8px;
+}
+
+.client-area button {
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:0;
+  border-radius:8px;
+  background:#ff8500;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#authMessage {color:#ffda8a}
+#clientStatus {color:#aab9d1}
+
 footer {
   text-align:center;
   padding:30px;
@@ -62,6 +107,7 @@ footer {
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -104,40 +150,6 @@ footer {
 
 </section>
 
-<footer>
-  © 2026 BOOST MAD PRO 🇲🇬
-  <p>Marketing Digital • Madagascar</p>
-</footer>
-<style>
-.client-area {
-  max-width: 450px;
-  margin: 35px auto;
-  padding: 25px;
-  background: #122747;
-  border: 1px solid #294365;
-  border-radius: 18px;
-}
-.client-area h2 { color: #ff8500; }
-.client-area input {
-  width: 100%;
-  padding: 13px;
-  margin: 8px 0;
-  border: 0;
-  border-radius: 8px;
-  box-sizing: border-box;
-}
-.client-area button {
-  padding: 12px;
-  margin: 6px 3px;
-  border: 0;
-  border-radius: 8px;
-  background: #ff8500;
-  color: white;
-  font-weight: bold;
-}
-#authMessage { color: #ffda8a; }
-</style>
-
 <section class="client-area">
   <h2>👤 Espace Client</h2>
   <p>Inscrivez-vous ou connectez-vous à votre compte.</p>
@@ -149,12 +161,21 @@ footer {
     placeholder="Mot de passe (6 caractères minimum)" required>
 
   <button onclick="registerClient()">S'inscrire</button>
+
+  <button onclick="resendConfirmation()">Renvoyer l'email</button>
+
   <button onclick="loginClient()">Se connecter</button>
+
   <button onclick="logoutClient()">Déconnexion</button>
 
   <p id="authMessage">Bienvenue sur BOOST MAD PRO !</p>
-  <p id="clientStatus"></p>
+  <p id="clientStatus">Non connecté</p>
 </section>
+
+<footer>
+  © 2026 BOOST MAD PRO 🇲🇬
+  <p>Marketing Digital • Madagascar</p>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -168,10 +189,14 @@ const clientSupabase = window.supabase.createClient(
   SUPABASE_KEY
 );
 
+const REDIRECT_URL =
+  "https://jeanbaptisterakotonandrasana7-crypto.github.io/boost-mad-pro/";
+
 function showMessage(message) {
   document.getElementById("authMessage").textContent = message;
 }
 
+// INSCRIPTION
 async function registerClient() {
   const email = document.getElementById("clientEmail").value.trim();
   const password = document.getElementById("clientPassword").value;
@@ -182,15 +207,15 @@ async function registerClient() {
   }
 
   const { data, error } = await clientSupabase.auth.signUp({
-  email: email,
-  password: password,
-  options: {
-    emailRedirectTo: "https://jeanbaptisterakotonandrasana7-crypto.github.io/boost-mad-pro/"
-  }
-});
+    email: email,
+    password: password,
+    options: {
+      emailRedirectTo: REDIRECT_URL
+    }
+  });
 
   if (error) {
-    showMessage(error.message);
+    showMessage("Erreur : " + error.message);
   } else if (data.session) {
     showMessage("Inscription réussie !");
   } else {
@@ -198,9 +223,39 @@ async function registerClient() {
   }
 }
 
+// RENVOYER EMAIL DE CONFIRMATION
+async function resendConfirmation() {
+  const email = document.getElementById("clientEmail").value.trim();
+
+  if (!email) {
+    showMessage("Ampidiro aloha ny adiresy email.");
+    return;
+  }
+
+  const { error } = await clientSupabase.auth.resend({
+    type: "signup",
+    email: email,
+    options: {
+      emailRedirectTo: REDIRECT_URL
+    }
+  });
+
+  if (error) {
+    showMessage("Erreur : " + error.message);
+  } else {
+    showMessage("Email vaovao nalefa ! Jereo ny boîte mail sy Spam.");
+  }
+}
+
+// CONNEXION
 async function loginClient() {
   const email = document.getElementById("clientEmail").value.trim();
   const password = document.getElementById("clientPassword").value;
+
+  if (!email || !password) {
+    showMessage("Ampidiro ny email sy mot de passe.");
+    return;
+  }
 
   const { data, error } = await clientSupabase.auth.signInWithPassword({
     email: email,
@@ -208,26 +263,29 @@ async function loginClient() {
   });
 
   if (error) {
-    showMessage(error.message);
+    showMessage("Erreur : " + error.message);
   } else {
     showMessage("Connexion réussie ! Tongasoa.");
   }
 }
 
+// DECONNEXION
 async function logoutClient() {
   const { error } = await clientSupabase.auth.signOut();
 
   if (error) {
-    showMessage(error.message);
+    showMessage("Erreur : " + error.message);
   } else {
     showMessage("Déconnexion réussie.");
   }
 }
 
+// STATUT DU CLIENT
 clientSupabase.auth.onAuthStateChange((event, session) => {
   document.getElementById("clientStatus").textContent =
     session ? "Connecté : " + session.user.email : "Non connecté";
 });
 </script>
+
 </body>
 </html>
