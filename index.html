@@ -182,9 +182,12 @@ async function registerClient() {
   }
 
   const { data, error } = await clientSupabase.auth.signUp({
-    email: email,
-    password: password
-  });
+  email: email,
+  password: password,
+  options: {
+    emailRedirectTo: "https://jeanbaptisterakotonandrasana7-crypto.github.io/boost-mad-pro/"
+  }
+});
 
   if (error) {
     showMessage(error.message);
