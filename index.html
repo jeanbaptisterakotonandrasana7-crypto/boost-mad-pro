@@ -108,6 +108,123 @@ footer {
   © 2026 BOOST MAD PRO 🇲🇬
   <p>Marketing Digital • Madagascar</p>
 </footer>
+<style>
+.client-area {
+  max-width: 450px;
+  margin: 35px auto;
+  padding: 25px;
+  background: #122747;
+  border: 1px solid #294365;
+  border-radius: 18px;
+}
+.client-area h2 { color: #ff8500; }
+.client-area input {
+  width: 100%;
+  padding: 13px;
+  margin: 8px 0;
+  border: 0;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+.client-area button {
+  padding: 12px;
+  margin: 6px 3px;
+  border: 0;
+  border-radius: 8px;
+  background: #ff8500;
+  color: white;
+  font-weight: bold;
+}
+#authMessage { color: #ffda8a; }
+</style>
 
+<section class="client-area">
+  <h2>👤 Espace Client</h2>
+  <p>Inscrivez-vous ou connectez-vous à votre compte.</p>
+
+  <input id="clientEmail" type="email"
+    placeholder="Adresse email" required>
+
+  <input id="clientPassword" type="password"
+    placeholder="Mot de passe (6 caractères minimum)" required>
+
+  <button onclick="registerClient()">S'inscrire</button>
+  <button onclick="loginClient()">Se connecter</button>
+  <button onclick="logoutClient()">Déconnexion</button>
+
+  <p id="authMessage">Bienvenue sur BOOST MAD PRO !</p>
+  <p id="clientStatus"></p>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://ekesfstgeklqjaoygdxp.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_HUmcu528elXIAWh7TXVCKg_R3Zs0z9U";
+
+const clientSupabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+function showMessage(message) {
+  document.getElementById("authMessage").textContent = message;
+}
+
+async function registerClient() {
+  const email = document.getElementById("clientEmail").value.trim();
+  const password = document.getElementById("clientPassword").value;
+
+  if (!email || password.length < 6) {
+    showMessage("Ampidiro email sy mot de passe 6 caractères minimum.");
+    return;
+  }
+
+  const { data, error } = await clientSupabase.auth.signUp({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    showMessage(error.message);
+  } else if (data.session) {
+    showMessage("Inscription réussie !");
+  } else {
+    showMessage("Inscription réussie ! Jereo ny email hanamafisana ny kaontinao.");
+  }
+}
+
+async function loginClient() {
+  const email = document.getElementById("clientEmail").value.trim();
+  const password = document.getElementById("clientPassword").value;
+
+  const { data, error } = await clientSupabase.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if (error) {
+    showMessage(error.message);
+  } else {
+    showMessage("Connexion réussie ! Tongasoa.");
+  }
+}
+
+async function logoutClient() {
+  const { error } = await clientSupabase.auth.signOut();
+
+  if (error) {
+    showMessage(error.message);
+  } else {
+    showMessage("Déconnexion réussie.");
+  }
+}
+
+clientSupabase.auth.onAuthStateChange((event, session) => {
+  document.getElementById("clientStatus").textContent =
+    session ? "Connecté : " + session.user.email : "Non connecté";
+});
+</script>
 </body>
 </html>
